@@ -13,13 +13,13 @@ BSOL_CURRENT_COLUMN = 'I_clamp_A'
 BSOL_B_FIELD_COLUMN = 'Bz_Gauss'
 
 # File Related
-FILE_LIST = sorted(os.listdir("/Users/your_data_path"))
-FOLDER_PATH = "/Users/your_data_path/"
+FILE_LIST = sorted(os.listdir("/Users/chen/Desktop/github/spe_image_handler/sample_data"))
+FOLDER_PATH = "/Users/chen/Desktop/github/spe_image_handler/sample_data/"
 FILE_START_STRING = 'set2'
 
 # Solenoid scan related
 SOL_SETTINGS = 11
 NUM_OF_FRAMES = 20
 
-# Contour related
+# Image contour related
 CONTOUR_LEVEL = 100
