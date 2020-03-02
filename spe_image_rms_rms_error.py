@@ -343,9 +343,9 @@ class DenoiseSPEImage:
                 plt.ylabel("y pixel")
 
                 # plot the less fine contour for good looking.
-                smooth_results_to_plt = scipy.ndimage.zoom(zoomed_in_current, 1)
-                x_to_plt = np.linspace(0, len(zoomed_in_current[0]), round(len(zoomed_in_current[0]) * 1))
-                y_to_plt = np.linspace(0, len(zoomed_in_current), round(len(zoomed_in_current) * 1))
+                smooth_results_to_plt = scipy.ndimage.zoom(zoomed_in_current, 0.5)
+                x_to_plt = np.linspace(0, len(zoomed_in_current[0]), round(len(zoomed_in_current[0]) * 0.5))
+                y_to_plt = np.linspace(0, len(zoomed_in_current), round(len(zoomed_in_current) * 0.5))
                 X_to_plt, Y_to_plt = np.meshgrid(x_to_plt, y_to_plt)
                 contour_to_plt = plt.contour(X_to_plt, Y_to_plt, smooth_results_to_plt, levels=[contour_level],
                                              colors='r')
