@@ -48,6 +48,6 @@ works. Both methods suggest a similar result.
 - [ ] Auto detect the cropping region.
 - [ ] Fix the frame labeling bug.
 
-## References
+## Credit
 The enclosed `winspec.py` was developed by Anton Loukianov (@antonl). Please visit https://github.com/antonl/pyWinSpec for more 
 details.
