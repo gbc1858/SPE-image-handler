@@ -13,8 +13,8 @@ BSOL_CURRENT_COLUMN = 'I_clamp_A'
 BSOL_B_FIELD_COLUMN = 'Bz_Gauss'
 
 # File Related
-FILE_LIST = sorted(os.listdir("/Users/chen/Desktop/AWA_data_analysis/20200109/"))
-FOLDER_PATH = "/Users/chen/Desktop/AWA_data_analysis/20200109/"
+FILE_LIST = sorted(os.listdir("/Users/your_data_path"))
+FOLDER_PATH = "/Users/your_data_path/"
 FILE_START_STRING = 'set2'
 
 # Solenoid scan related
