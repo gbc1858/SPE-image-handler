@@ -77,10 +77,6 @@ class DenoiseSPEImage:
         self.y_rms_all = []
         self.x_rms_std = []
         self.y_rms_std = []
-        self.x_rms_all_contour = []
-        self.y_rms_all_contour = []
-        self.x_rms_std_contour = []
-        self.y_rms_std_contour = []
         self.contour_paths_all = []
         self.zoom_in_single_frame = []
         self.x_intensity_no_bg = []
@@ -105,11 +101,8 @@ class DenoiseSPEImage:
         self.x_rms_std = []
         self.y_rms_std = []
 
-    def get_all_rms_and_std(self):
-        return self.x_rms_all, self.y_rms_all, self.x_rms_std, self.y_rms_std
-
-    def get_all_rms_and_std_contour(self):
-        return self.x_rms_all_contour, self.y_rms_all_contour, self.x_rms_std_contour, self.y_rms_std_contour
+    # def get_all_rms_and_std(self):
+    #     return self.x_rms_all, self.y_rms_all, self.x_rms_std, self.y_rms_std
 
     def set_cropped_range(self, x_start, x_end, y_start, y_end):
         self.x_start = x_start
@@ -139,15 +132,15 @@ class DenoiseSPEImage:
         cropped_background = background_arr[self.bg_y_start:self.bg_y_end, self.bg_x_start:self.bg_x_end]
         return np.mean(cropped_background.flatten())
 
-    # def has_bg_within_contour(self):
-    #     if self.zoom_in_single_frame:
-    #         return True
-    #     return False
+    def has_bg_within_contour(self):
+        if self.zoom_in_single_frame:
+            return True
+        return False
 
     def get_bg_within_contour(self, current_frame):
-        # if not self.has_bg_within_contour():
-        #     raise DenoiseFrameAfterContourError("Contours need to be added to the images, and force zero outside the "
-        #                                         "contour region.")
+        if not self.has_bg_within_contour():
+            raise DenoiseFrameAfterContourError("Contours need to be added to the images, and force zero outside the "
+                                                "contour region.")
 
         single_frame = self.get_main_beam_contour_and_force_outer_zero(current_frame, settings.CONTOUR_LEVEL)
         single_frame_temp = sorted(single_frame.flatten())
@@ -321,6 +314,7 @@ class DenoiseSPEImage:
                 if contour_method:
                     x_intensity_ave_no_bg, y_intensity_ave_no_bg, zoomed_in_current = self.get_intensity_ave_using_contour_bg(
                         curr_all_frame[i])
+
                 self.generate_image_and_save(zoomed_in_current, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file,
                                              'single', 0)
 
