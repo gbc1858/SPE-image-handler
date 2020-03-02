@@ -18,14 +18,14 @@ works. Both methods suggest a similar result.
     ```
     - **Generate beam contours.** To outline the beam spot in every frame, contours will be generated based on the user 
     provided contour levels (aka. the ROI). The contour with the longest path is the beam spot contour. Beam images and the 
-    corresponding contours can be displayed using the function `draw_beam_contour`.
+    corresponding contours can be displayed using the function of `draw_beam_contour()`.
     ```python
    SPE_image.draw_beam_contour(100, 50)
     ```
     - **Denoise the beam image.** All pixel datapoints outside the beam contour will be set to zero. 
     - **Calculate the background within the contour.** Background will be calculated from the lowest 100 pixel values 
     within the contour. And subtract the calculated background from the copped image file. 
-    - **Denoise the beam image (w/o background) the second time.** Use `scipy.ndimage.median_filter`.
+    - **Denoise the beam image (w/o background) the second time.** Use `scipy.ndimage.median_filter()` function.
     - **Calculate the beam RMS sizes.** Beam RMS sizes are calculated from the Gaussian fitting.
     ```python
    x_rms, y_rms, x_std, y_std = SPE_image.get_rms_and_rms_error(contour_method=True)
@@ -37,12 +37,12 @@ works. Both methods suggest a similar result.
     ```
     - **Calculate the background.** Background will be calculated from the upper corner of the image profile. The 
     calculated background will be subtracted from the image file.
-    - **Denoise the beam image (w/o background).** Use `scipy.ndimage.median_filter`.
+    - **Denoise the beam image (w/o background).** Use `scipy.ndimage.median_filter()` function.
     - **Calculate the beam RMS sizes.**
     ```python
    x_rms, y_rms, x_std, y_std = SPE_image.get_rms_and_rms_error(regular_method=True)
     ```
-Beam profiles can be saved to one or multiple pdf files using the function of `plot_single_frame`. Note: the two Boolean 
+Beam profiles can be saved to one or multiple pdf files using the function of `plot_single_frame()`. Note: the two Boolean 
 arguments need to be consistent to the used method.
 ```python
 SPE_image.plot_single_frame(contour_method=False, regular_method=False)
