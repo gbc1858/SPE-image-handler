@@ -303,7 +303,9 @@ class DenoiseSPEImage:
         
         for file in self.spe_file_list:
             curr_all_frame = self.get_current_all_frame(file)
+            frame_counter = -1
             for i in range(len(curr_all_frame)):
+                frame_counter += 1
                 current_frame = curr_all_frame[i]
                 zoomed_in_current = current_frame[self.y_start:self.y_end, self.x_start:self.x_end]
 
@@ -316,7 +318,7 @@ class DenoiseSPEImage:
                         curr_all_frame[i])
 
                 self.generate_image_and_save(zoomed_in_current, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file,
-                                             'single', 0)
+                                             'single', frame_counter)
 
     def draw_beam_contour(self, contour_level, lower_diameter_boundary):
         """

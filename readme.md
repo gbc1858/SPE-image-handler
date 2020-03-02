@@ -53,7 +53,7 @@ SPE_image.plot_single_frame(contour_method=False, regular_method=True)    # for 
 
 ## TODOs
 - [ ] Auto detect the cropping region.
-- [ ] Fix the frame labeling bug.
+- [x] Fix the frame labeling bug.
 
 ## Credit
 The enclosed `winspec.py` was developed by Anton Loukianov (@antonl). Please visit https://github.com/antonl/pyWinSpec for more 
