@@ -49,5 +49,5 @@ works. Both methods suggest a similar result.
 - [ ] Fix the frame labeling bug.
 
 ## References
-The enclosed `winspec.py` is developed by Anton Loukianov. Please visit https://github.com/antonl/pyWinSpec for more 
+The enclosed `winspec.py` was developed by Anton Loukianov (@antonl). Please visit https://github.com/antonl/pyWinSpec for more 
 details.
