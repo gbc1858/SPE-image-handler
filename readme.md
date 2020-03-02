@@ -47,3 +47,7 @@ works. Both methods suggest a similar result.
 ## TODOs
 - [ ] Auto detect the cropping region.
 - [ ] Fix the frame labeling bug.
+
+## References
+The enclosed `winspec.py` is developed by Anton Loukianov. Please visit https://github.com/antonl/pyWinSpec for more 
+details.
