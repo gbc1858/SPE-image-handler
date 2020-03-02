@@ -42,7 +42,11 @@ works. Both methods suggest a similar result.
     ```python
    x_rms, y_rms, x_std, y_std = SPE_image.get_rms_and_rms_error(regular_method=True)
     ```
-Beam profiles can be saved to pdf using the function of `plot_single_frame`.
+Beam profiles can be saved to one or multiple pdf files using the function of `plot_single_frame`. Note: the two Boolean 
+arguments need to be consistent to the used method.
+```python
+SPE_image.plot_single_frame(contour_method=False, regular_method=False)
+```
 
 
 ## TODOs
