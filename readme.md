@@ -45,7 +45,9 @@ works. Both methods suggest a similar result.
 Beam profiles can be saved to one or multiple pdf files using the function of `plot_single_frame()`. Note: the two Boolean 
 arguments need to be consistent to the used method.
 ```python
-SPE_image.plot_single_frame(contour_method=False, regular_method=False)
+SPE_image.plot_single_frame(contour_method=True, regular_method=False)    # for method#1
+SPE_image.plot_single_frame(contour_method=False, regular_method=True)    # for method#2
+
 ```
 
 
