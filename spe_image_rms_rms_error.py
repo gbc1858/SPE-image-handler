@@ -138,9 +138,9 @@ class DenoiseSPEImage:
         return False
 
     def get_bg_within_contour(self, current_frame):
-        if not self.has_bg_within_contour():
-            raise DenoiseFrameAfterContourError("Contours need to be added to the images, and force zero outside the "
-                                                "contour region.")
+        # if not self.has_bg_within_contour():
+        #     raise DenoiseFrameAfterContourError("Contours need to be added to the images, and force zero outside the "
+        #                                         "contour region.")
 
         single_frame = self.get_main_beam_contour_and_force_outer_zero(current_frame, settings.CONTOUR_LEVEL)
         single_frame_temp = sorted(single_frame.flatten())
