@@ -161,7 +161,6 @@ class DenoiseSPEImage:
         pdf = PdfPages(file + file_end_str)
         for fig_index in range(1, plt.gcf().number + 1):
             pdf.savefig(fig_index)
-            # plt.close()
         pdf.close()
 
     def generate_image_and_save(self, zoom_in, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file, file_type,
@@ -215,12 +214,11 @@ class DenoiseSPEImage:
             fig.suptitle(file + "\n frame#%d" % (single_frame_counter + 1), fontsize=14)
         else:
             raise ValueError('file_type has to be single or all.')
-        print("\rSaving the beam profile of %s Frame#%i" % (file, single_frame_counter + 1), end="")
+        print("\rSaving the beam profile of %s Frame#%02i" % (file, single_frame_counter + 1), end="")
         self.save_pdf(file.split(".")[0], file_type)
 
     def get_intensity_ave_no_bg(self, frame):
         zoomed_in_current = frame[self.y_start:self.y_end, self.x_start:self.x_end]
-        zoomed_in_current = ndi.median_filter(zoomed_in_current, 3)
         bg = self.get_background(zoomed_in_current)
         x_intensity_ave = zoomed_in_current.mean(axis=0).tolist()
         y_intensity_ave = zoomed_in_current.mean(axis=1).tolist()
@@ -265,8 +263,9 @@ class DenoiseSPEImage:
             raise DenoiseCroppedError('You need to set the cropped range first.')
         self.clear()
 
-        if contour_method == True and regular_method == True:
+        if contour_method is True and regular_method is True:
             raise RmsMethodError('Only one method is allowed to be True at once.')
+        self.clear()
 
         for file in self.spe_file_list:
             curr_all_frame = self.get_current_all_frame(file)
@@ -276,7 +275,7 @@ class DenoiseSPEImage:
                 if regular_method:
                     x_intensity_ave_no_bg, y_intensity_ave_no_bg = self.get_intensity_ave_no_bg(curr_all_frame[i])
                 if contour_method:
-                    x_intensity_ave_no_bg, y_intensity_ave_no_bg, zoomed_single_frame = self.get_intensity_ave_using_contour_bg(curr_all_frame[i])
+                    x_intensity_ave_no_bg, y_intensity_ave_no_bg = self.get_intensity_ave_using_contour_bg(curr_all_frame[i])[0:2]
 
                 x = np.linspace(0, len(x_intensity_ave_no_bg), len(x_intensity_ave_no_bg))
                 y = np.linspace(0, len(y_intensity_ave_no_bg), len(y_intensity_ave_no_bg))
@@ -302,10 +301,12 @@ class DenoiseSPEImage:
         
         if contour_method is True and regular_method is True:
             raise RmsMethodError('Only one method is allowed to be True at once.')
+        self.clear()
 
         if contour_method is False and regular_method is False:
             raise RmsMethodError('At least one method needs to be used.')
-        
+        self.clear()
+
         for file in self.spe_file_list:
             curr_all_frame = self.get_current_all_frame(file)
             frame_counter = -1
@@ -315,15 +316,14 @@ class DenoiseSPEImage:
                 current_frame = curr_all_frame[i]
                 zoomed_in_current = current_frame[self.y_start:self.y_end, self.x_start:self.x_end]
 
-                if regular_method:
+                if regular_method and not contour_method:
                     x_intensity_ave_no_bg, y_intensity_ave_no_bg = self.get_intensity_ave_no_bg(curr_all_frame[i])
-                    # apply the gaussian filter to de-noise the cropped images.
-                    zoomed_in_current = ndi.median_filter(zoomed_in_current, 3)
-                if contour_method:
-                    x_intensity_ave_no_bg, y_intensity_ave_no_bg, zoomed_in_current = self.get_intensity_ave_using_contour_bg(
-                        curr_all_frame[i])
+                    zoomed_in_frame = ndi.median_filter(zoomed_in_current, 3)
 
-                self.generate_image_and_save(zoomed_in_current, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file,
+                if contour_method and not regular_method:
+                    x_intensity_ave_no_bg, y_intensity_ave_no_bg, zoomed_in_frame = self.get_intensity_ave_using_contour_bg(curr_all_frame[i])
+
+                self.generate_image_and_save(zoomed_in_frame, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file,
                                              'single', frame_counter)
 
     def draw_beam_contour(self, contour_level, lower_diameter_boundary):
@@ -364,14 +364,16 @@ class DenoiseSPEImage:
     def get_main_beam_contour_and_force_outer_zero(self, current_frame, contour_level):
         zoomed_in_current = current_frame[self.y_start:self.y_end, self.x_start:self.x_end]
 
+        fig, ax = plt.subplots()
+
         smooth_results_to_plt = scipy.ndimage.zoom(zoomed_in_current, 1)
         x = np.linspace(0, len(zoomed_in_current[0]), round(len(zoomed_in_current[0]) * 1))
         y = np.linspace(0, len(zoomed_in_current), round(len(zoomed_in_current) * 1))
         X, Y = np.meshgrid(x, y)
-        contour_to_plt = plt.contour(X, Y, smooth_results_to_plt,
+        contour_to_plt = ax.contour(X, Y, smooth_results_to_plt,
                                      levels=[contour_level],
                                      colors='r')
-        plt.close('all')
+        plt.close(fig)
 
         contour_collection = contour_to_plt.collections[0].get_paths()
         contour_enu = list(contour_collection)
@@ -387,7 +389,7 @@ class DenoiseSPEImage:
         y_cor_list = []
         for y, x_list in y_set.items():
             if y not in y_cor_list:
-                y_cor_list.append(y)
+                y_cor_list.append(int(y))
             for check_x in it.chain(range(0, min(x_list)), range(max(x_list) + 1, len(zoomed_in_current[0]))):
                 zoomed_in_current[y][check_x] = 0
 
@@ -395,5 +397,5 @@ class DenoiseSPEImage:
             for row_num in it.chain(range(0, min(y_cor_list)), range(max(y_cor_list), len(zoomed_in_current))):
                 zoomed_in_current[row_num][enu_x] = 0
 
-        self.zoom_in_single_frame = zoomed_in_current
-        return self.zoom_in_single_frame
+        # self.zoom_in_single_frame = zoomed_in_current
+        return zoomed_in_current
