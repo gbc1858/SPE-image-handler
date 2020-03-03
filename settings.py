@@ -16,7 +16,6 @@ BSOL_B_FIELD_COLUMN = 'Bz_Gauss'
 FILE_LIST = sorted(os.listdir("/Users/chen/Desktop/github/spe_image_handler/sample_data"))
 FOLDER_PATH = "/Users/chen/Desktop/github/spe_image_handler/sample_data/"
 FILE_START_STRING = 'set2'
-SOLENOID_SETTING_IMG = 'set2_02'
 
 # Solenoid scan related
 SOL_SETTINGS = 11
