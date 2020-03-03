@@ -8,7 +8,7 @@ This file is to analyze the .SPE image. Horizontal and vertical RMS beam spot si
 For the beam RMS size calculation, there are two methods included. Following is a brief description of how each method 
 works. Both methods suggest a similar result.
  
- - Method#1
+ - #### Method#1
     - **Crop all images.** All beam images will be cropped according to the user provided parameters. 
     ```python
    from spe_image_rms_rms_error import *
@@ -30,7 +30,7 @@ works. Both methods suggest a similar result.
     ```python
    x_rms, y_rms, x_std, y_std = SPE_image.get_rms_and_rms_error(contour_method=True)
     ```
- - Method#2 (a bit faster)
+ - #### Method#2 (a bit faster)
     - **Crop all images.**
     ```python
    SPE_image.set_cropped_range(100, 480, 200, 500)
@@ -47,10 +47,9 @@ arguments need to be consistent to the used method.
 ```python
 SPE_image.plot_single_frame(contour_method=True, regular_method=False)    # for method#1
 SPE_image.plot_single_frame(contour_method=False, regular_method=True)    # for method#2
-
 ```
+Run `test.py` for a simple test.
 
-## Simple run 
 ## TODOs
 - [ ] Auto detect the cropping region.
 - [x] Fix the frame labeling bug.

@@ -215,7 +215,7 @@ class DenoiseSPEImage:
             fig.suptitle(file + "\n frame#%d" % (single_frame_counter + 1), fontsize=14)
         else:
             raise ValueError('file_type has to be single or all.')
-        print(f"Saving the beam profile of {file} Frame#{single_frame_counter + 1}")
+        print("\rSaving the beam profile of %s Frame#%i" % (file, single_frame_counter + 1), end="")
         self.save_pdf(file.split(".")[0], file_type)
 
     def get_intensity_ave_no_bg(self, frame):
