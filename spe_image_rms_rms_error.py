@@ -151,16 +151,17 @@ class DenoiseSPEImage:
         self.sol_cont.append(file.split('_')[1])
         return SpeFile(self.folder_location + file).data
 
-    def save_pdf(self, file_type):
+    def save_pdf(self, file, file_type):
         if file_type == 'all':
             file_end_str = '_all_jet.pdf'
         elif file_type == 'single':
             file_end_str = '_jet_single_frame.pdf'
         else:
             raise ValueError('file_type has to be single or all.')
-        pdf = PdfPages(self.file_start_str + file_end_str)
+        pdf = PdfPages(file + file_end_str)
         for fig_index in range(1, plt.gcf().number + 1):
             pdf.savefig(fig_index)
+            # plt.close()
         pdf.close()
 
     def generate_image_and_save(self, zoom_in, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file, file_type,
@@ -214,7 +215,8 @@ class DenoiseSPEImage:
             fig.suptitle(file + "\n frame#%d" % (single_frame_counter + 1), fontsize=14)
         else:
             raise ValueError('file_type has to be single or all.')
-        self.save_pdf(file_type)
+        print(f"Saving the beam profile of {file} Frame#{single_frame_counter + 1}")
+        self.save_pdf(file.split(".")[0], file_type)
 
     def get_intensity_ave_no_bg(self, frame):
         zoomed_in_current = frame[self.y_start:self.y_end, self.x_start:self.x_end]
@@ -300,10 +302,14 @@ class DenoiseSPEImage:
         
         if contour_method is True and regular_method is True:
             raise RmsMethodError('Only one method is allowed to be True at once.')
+
+        if contour_method is False and regular_method is False:
+            raise RmsMethodError('At least one method needs to be used.')
         
         for file in self.spe_file_list:
             curr_all_frame = self.get_current_all_frame(file)
             frame_counter = -1
+            plt.close('all')
             for i in range(len(curr_all_frame)):
                 frame_counter += 1
                 current_frame = curr_all_frame[i]

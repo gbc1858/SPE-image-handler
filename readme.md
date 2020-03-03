@@ -16,9 +16,9 @@ works. Both methods suggest a similar result.
    SPE_image = DenoiseSPEImage(settings.FILE_START_STRING, settings.FOLDER_PATH, settings.FILE_LIST)
    SPE_image.set_cropped_range(100, 480, 200, 500)
     ```
-    - **Generate beam contours.** To outline the beam spot in every frame, contours will be generated based on the user 
-    provided contour levels (aka. the ROI). The contour with the longest path is the beam spot contour. Beam images and the 
-    corresponding contours can be displayed using the function of `draw_beam_contour()`.
+    - **Generate beam contours.** To outline the beam spot (or to find the ROI) of every frame, contours will be 
+    generated based on the user provided contour levels. The contour with the longest path is the beam spot contour. 
+    Beam images and the corresponding contours can be displayed using the function of `draw_beam_contour()`.
     ```python
    SPE_image.draw_beam_contour(100, 50)
     ```
@@ -50,7 +50,7 @@ SPE_image.plot_single_frame(contour_method=False, regular_method=True)    # for 
 
 ```
 
-
+## Simple run 
 ## TODOs
 - [ ] Auto detect the cropping region.
 - [x] Fix the frame labeling bug.
