@@ -14,7 +14,7 @@ works. Both methods suggest a similar result.
    from spe_image_rms_rms_error import *
    
    SPE_image = DenoiseSPEImage(settings.FILE_START_STRING, settings.FOLDER_PATH, settings.FILE_LIST)
-   SPE_image.set_cropped_range(100, 480, 200, 500)
+   SPE_image.set_cropped_range(100, 480, 200, 500)    # x_start, x_end, y_start, y_end 
     ```
     - **Generate beam contours.** To outline the beam spot (or to find the ROI) of every frame, contours will be 
     generated based on the user provided contour levels. The contour with the longest path is the beam spot contour. 
@@ -22,7 +22,11 @@ works. Both methods suggest a similar result.
     ```python
    SPE_image.draw_beam_contour(100, 50)
     ```
-    - **Denoise the beam image.** All pixel datapoints outside the beam contour will be set to zero. 
+    ![](img_w_contour.png)
+
+    - **Denoise the beam image.** All pixel datapoints outside the beam contour will be set to zero, an example is shown
+     below,
+    ![](contour_method.png)
     - **Calculate the background within the contour.** Background will be calculated from the lowest 100 pixel values 
     within the contour. And subtract the calculated background from the copped image file. 
     - **Denoise the beam image (w/o background) the second time.** Use `scipy.ndimage.median_filter()` function.
@@ -33,11 +37,12 @@ works. Both methods suggest a similar result.
  - #### Method#2 (a bit faster)
     - **Crop all images.**
     ```python
-   SPE_image.set_cropped_range(100, 480, 200, 500)
+   SPE_image.set_cropped_range(100, 480, 200, 500)     # x_start, x_end, y_start, y_end 
     ```
     - **Calculate the background.** Background will be calculated from the upper corner of the image profile. The 
     calculated background will be subtracted from the image file.
-    - **Denoise the beam image (w/o background).** Use `scipy.ndimage.median_filter()` function.
+    - **Denoise the beam image (w/o background).** Use `scipy.ndimage.median_filter()` function, an example is shown below,
+        ![](regular_method.png)
     - **Calculate the beam RMS sizes.**
     ```python
    x_rms, y_rms, x_std, y_std = SPE_image.get_rms_and_rms_error(regular_method=True)
