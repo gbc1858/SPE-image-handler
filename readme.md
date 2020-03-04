@@ -23,7 +23,6 @@ works. Both methods suggest a similar result.
    SPE_image.draw_beam_contour(100, 50)
     ```
     ![img](img_w_contour.png)
-    <img src="mg_w_contour.png" width="20" />
 
     - **Denoise the beam image.** All pixel datapoints outside the beam contour will be set to zero, an example is shown
      below,
