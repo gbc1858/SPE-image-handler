@@ -22,11 +22,11 @@ works. Both methods suggest a similar result.
     ```python
    SPE_image.draw_beam_contour(100, 50)
     ```
-    ![img](img_w_contour.png)
+    ![img](readme_img/img_w_contour.png)
 
     - **Denoise the beam image.** All pixel datapoints outside the beam contour will be set to zero, an example is shown
      below,
-    ![img](contour_method.png)
+    ![img](readme_img/contour_method.png)
     - **Calculate the background within the contour.** Background will be calculated from the lowest 100 pixel values 
     within the contour. And subtract the calculated background from the copped image file. 
     - **Denoise the beam image (w/o background) the second time.** Use `scipy.ndimage.median_filter()` function.
@@ -42,7 +42,7 @@ works. Both methods suggest a similar result.
     - **Calculate the background.** Background will be calculated from the upper corner of the image profile. The 
     calculated background will be subtracted from the image file.
     - **Denoise the beam image (w/o background).** Use `scipy.ndimage.median_filter()` function, an example is shown below,
-        ![](regular_method.png)
+        ![](readme_img/regular_method.png)
     - **Calculate the beam RMS sizes.**
     ```python
    x_rms, y_rms, x_std, y_std = SPE_image.get_rms_and_rms_error(regular_method=True)
