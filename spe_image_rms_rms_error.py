@@ -22,6 +22,7 @@ def quadratic(data, aa, bb, cc):
 
 def get_bsol_field(i_sol):
     """
+    Get the solenoid magnetic field from the solenoid current.
     :param i_sol: current of the blue solenoid [A]
     :return: a magnetic field list of blue solenoid [Gauss]
     """
@@ -32,18 +33,38 @@ def get_bsol_field(i_sol):
     return [i * a + b for i in i_sol]
 
 
-# Define Gaussian function with offset
 def gaus(x, a, x0, sigma, c):
+    """
+    Gaussian function.
+    :param x:
+    :param a: constant
+    :param x0: constant
+    :param sigma: RMS width
+    :param c: gaussian function offset
+    :return:
+    """
     return a * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2)) + c
 
 
 def calculate_gauss_fitting_params(interval, intensity_ave_no_bg):
+    """
+    Get Gaussian fitting parameters.
+    :param interval: x range
+    :param intensity_ave_no_bg: y value
+    :return: popt, pcov, where popt is a list of optimal values for all fitting parameters
+    """
     mean = sum(intensity_ave_no_bg * interval) / sum(intensity_ave_no_bg)
     sigma = np.sqrt(np.absolute(sum(intensity_ave_no_bg * (interval - mean) ** 2) / sum(intensity_ave_no_bg)))
     return curve_fit(gaus, interval, intensity_ave_no_bg, p0=[1., mean, sigma, 0], maxfev=10000000)
 
 
 def calculate_intensity_avg_no_bg(bg, intensity_ave):
+    """
+    Get intensity after subtracting the background.
+    :param bg: a float of calculated background
+    :param intensity_ave: 1D list of averaged intensity
+    :return: 1D list of intensity with background subtracted
+    """
     intensity_ave_no_bg = [i - bg for i in intensity_ave]
     for index in range(len(intensity_ave_no_bg)):
         intensity_ave_no_bg[index] = 0 if intensity_ave_no_bg[index] < 0 else intensity_ave_no_bg[index]
@@ -52,8 +73,9 @@ def calculate_intensity_avg_no_bg(bg, intensity_ave):
 
 def convert_cont_to_current(count: float):
     """
+    Convert solenoid count number to solenoid field.
     :param count: solenoid count number
-    :return: single number of a current
+    :return: a single current float
     """
     if 0 <= count <= 1312:
         count_ls = [0, 608, 672, 736, 800, 864, 928, 992, 1056, 1120, 1184, 1248, 1312]  # blue solenoid count number
@@ -105,66 +127,101 @@ class DenoiseSPEImage:
     #     return self.x_rms_all, self.y_rms_all, self.x_rms_std, self.y_rms_std
 
     def set_cropped_range(self, x_start, x_end, y_start, y_end):
+        """
+        Set the cropping boundaries of the original images.
+        """
         self.x_start = x_start
         self.x_end = x_end
         self.y_start = y_start
         self.y_end = y_end
 
     def has_cropped_range(self):
+        """
+        Image cropping boundary value check.
+        """
         if self.x_start and self.x_end and self.y_end and self.y_start:
             return True
         return False
 
     def set_background_range(self, bg_x_start, bg_x_end, bg_y_start, bg_y_end):
+        """
+        Set the background boundary (useful only when regular_method is applied).
+        """
         self.bg_x_start = bg_x_start
         self.bg_x_end = bg_x_end
         self.bg_y_start = bg_y_start
         self.bg_y_end = bg_y_end
 
     def has_background_range(self):
+        """
+        Background cropping boundary value check.
+        """
         if self.bg_x_start is not None and self.bg_x_end is not None and self.y_start is not None and self.y_end is not None:
             return True
         return False
 
     def get_background(self, background_arr):
+        """
+        Calculate the background value from a corner of the beam image (useful only when regular_method is applied).
+        :param background_arr: image array to calculate the background
+        :return: a background float
+        """
         if not self.has_background_range():
             raise DenoiseBGError('You need to set the background range first.')
         cropped_background = background_arr[self.bg_y_start:self.bg_y_end, self.bg_x_start:self.bg_x_end]
         return np.mean(cropped_background.flatten())
 
-    def has_bg_within_contour(self):
-        if self.zoom_in_single_frame:
-            return True
-        return False
-
     def get_bg_within_contour(self, current_frame):
-        # if not self.has_bg_within_contour():
-        #     raise DenoiseFrameAfterContourError("Contours need to be added to the images, and force zero outside the "
-        #                                         "contour region.")
-
-        single_frame = self.get_main_beam_contour_and_force_outer_zero(current_frame, settings.CONTOUR_LEVEL)
-        single_frame_temp = sorted(single_frame.flatten())
+        """
+        Calculate the background value from denoised beam image (useful only when contour_method is applied).
+        :param current_frame: a denoised image array with only the beam in the contour left and zero everywhere else
+        :return: background float averaged over lowest 100 non zero pixel values
+        """
+        self.get_main_beam_contour_and_force_outer_zero(current_frame)
+        single_frame = self.zoom_in_single_frame
+        single_frame_temp = sorted(np.array(single_frame).flatten())
         single_frame_temp[:] = (i for i in single_frame_temp if i != 0)
         return np.mean(single_frame_temp[:100])
 
     def get_current_all_frame(self, file):
+        """
+        Read .SPE data file.
+        :param file: raw data file
+        :return: multi-dimension image data array
+        """
         self.sol_cont.append(file.split('_')[1])
         return SpeFile(self.folder_location + file).data
 
     def save_pdf(self, file, file_type):
+        """
+        Save beam images to pdf.
+        :param file: image data file name string
+        :param file_type: pdf name end string
+        :return:
+        """
         if file_type == 'all':
             file_end_str = '_all_jet.pdf'
         elif file_type == 'single':
             file_end_str = '_jet_single_frame.pdf'
         else:
             raise ValueError('file_type has to be single or all.')
-        pdf = PdfPages(file + file_end_str)
-        for fig_index in range(1, plt.gcf().number + 1):
-            pdf.savefig(fig_index)
-        pdf.close()
+        with PdfPages(file + file_end_str) as pdf:
+            for fig_index in range(1, plt.gcf().number + 1):
+                pdf.savefig(fig_index)
 
     def generate_image_and_save(self, zoom_in, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file, file_type,
                                 single_frame_counter=None):
+        """
+        Generate plot including the beam itself, the x and y normalized (to 10) bar chart together with the Gaussian
+        fitting curves.
+        :param zoom_in: cropped image array
+        :param x_intensity_ave_no_bg: x intensity with the background subtracted
+        :param y_intensity_ave_no_bg: y intensity with the background subtracted
+        :param file: a string of the image file name
+        :param file_type: saving all single frames (most used) or averaged frames (not frequently used)
+        :param single_frame_counter: plotting frame number
+        :return:
+        """
         x = np.linspace(0, len(x_intensity_ave_no_bg), len(x_intensity_ave_no_bg))
         y = np.linspace(0, len(y_intensity_ave_no_bg), len(y_intensity_ave_no_bg))
         fig = plt.figure()
@@ -218,6 +275,11 @@ class DenoiseSPEImage:
         self.save_pdf(file.split(".")[0], file_type)
 
     def get_intensity_ave_no_bg(self, frame):
+        """
+        Get 1D lists of averaged intensity along rows, and columns with background subtracted (regular_method use).
+        :param frame: original beam image (non-cropped) array
+        :return: 1D lists of x and y intensities without the background
+        """
         zoomed_in_current = frame[self.y_start:self.y_end, self.x_start:self.x_end]
         bg = self.get_background(zoomed_in_current)
         x_intensity_ave = zoomed_in_current.mean(axis=0).tolist()
@@ -225,6 +287,12 @@ class DenoiseSPEImage:
         return calculate_intensity_avg_no_bg(bg, x_intensity_ave), calculate_intensity_avg_no_bg(bg, y_intensity_ave)
 
     def get_intensity_ave_using_contour_bg(self, frame):
+        """
+        Get 1D lists of averaged x and y intensities with background subtracted from 2D image array (contour_method
+        use).
+        :param frame: original beam image (non-cropped) array
+        :return: 1D lists of x and y intensities without the background, cropped in 2D image array
+        """
         zoomed_single_frame = frame[self.y_start:self.y_end, self.x_start:self.x_end]
         bg = self.get_bg_within_contour(frame)
         zoomed_single_frame = np.array(zoomed_single_frame) - bg
@@ -233,13 +301,12 @@ class DenoiseSPEImage:
         zoomed_single_frame = ndi.median_filter(zoomed_single_frame, 3)
         x_intensity_ave = zoomed_single_frame.mean(axis=0).tolist()
         y_intensity_ave = zoomed_single_frame.mean(axis=1).tolist()
-
         return x_intensity_ave, y_intensity_ave, zoomed_single_frame
 
     def get_rms_plot_all_ave_frames(self):
         """
-        Beam image at each solenoid setting is averaged from the 20 frames. Then performing the RMS calculation and
-        ploting etc.z
+        Beam image at each solenoid setting is averaged over the 20 frames. Then performing the RMS calculation and
+        plotting etc. (This method is not frequently in use).
         """
         if not self.has_cropped_range():
             raise DenoiseCroppedError('You need to set the cropped range first.')
@@ -259,6 +326,12 @@ class DenoiseSPEImage:
             self.generate_image_and_save(zoomed_in_results, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file, 'all')
 
     def get_rms_and_rms_error(self, contour_method=False, regular_method=False):
+        """
+        Get beam x and y RMS widths and the correlated standard deviations.
+        :param contour_method: a boolean argument for using contour_method
+        :param regular_method: a boolean argument for using regular_method
+        :return: RMS x, RMS y, STD x, STD y
+        """
         if not self.has_cropped_range():
             raise DenoiseCroppedError('You need to set the cropped range first.')
         self.clear()
@@ -275,7 +348,8 @@ class DenoiseSPEImage:
                 if regular_method:
                     x_intensity_ave_no_bg, y_intensity_ave_no_bg = self.get_intensity_ave_no_bg(curr_all_frame[i])
                 if contour_method:
-                    x_intensity_ave_no_bg, y_intensity_ave_no_bg = self.get_intensity_ave_using_contour_bg(curr_all_frame[i])[0:2]
+                    x_intensity_ave_no_bg, y_intensity_ave_no_bg = self.get_intensity_ave_using_contour_bg(
+                        curr_all_frame[i])[0:2]
 
                 x = np.linspace(0, len(x_intensity_ave_no_bg), len(x_intensity_ave_no_bg))
                 y = np.linspace(0, len(y_intensity_ave_no_bg), len(y_intensity_ave_no_bg))
@@ -295,10 +369,16 @@ class DenoiseSPEImage:
         return self.x_rms_all, self.y_rms_all, self.x_rms_std, self.y_rms_std
 
     def plot_single_frame(self, contour_method=False, regular_method=False):
+        """
+
+        :param contour_method: boolean argument
+        :param regular_method: boolean argument
+        :return:
+        """
         if not self.has_cropped_range():
             raise DenoiseCroppedError('You need to set the cropped range first.')
         self.clear()
-        
+
         if contour_method is True and regular_method is True:
             raise RmsMethodError('Only one method is allowed to be True at once.')
         self.clear()
@@ -321,15 +401,17 @@ class DenoiseSPEImage:
                     zoomed_in_frame = ndi.median_filter(zoomed_in_current, 3)
 
                 if contour_method and not regular_method:
-                    x_intensity_ave_no_bg, y_intensity_ave_no_bg, zoomed_in_frame = self.get_intensity_ave_using_contour_bg(curr_all_frame[i])
+                    x_intensity_ave_no_bg, y_intensity_ave_no_bg, zoomed_in_frame = self.get_intensity_ave_using_contour_bg(
+                        curr_all_frame[i])
 
                 self.generate_image_and_save(zoomed_in_frame, x_intensity_ave_no_bg, y_intensity_ave_no_bg, file,
                                              'single', frame_counter)
 
-    def draw_beam_contour(self, contour_level, lower_diameter_boundary):
+    def draw_beam_contour(self, lower_diameter_boundary):
         """
-        For drawing and imaging plotting purpose. Contours have less fine mesh. The beam/noise with too small contours
-        are removed.
+        Draw beam image with the contour plotted in red.
+        :param lower_diameter_boundary: lower boundary of the contour diameter to be removed
+        :return:
         """
         for file in self.spe_file_list:
             curr_all_frame = self.get_current_all_frame(file)
@@ -349,7 +431,7 @@ class DenoiseSPEImage:
                 x_to_plt = np.linspace(0, len(zoomed_in_current[0]), round(len(zoomed_in_current[0]) * 0.5))
                 y_to_plt = np.linspace(0, len(zoomed_in_current), round(len(zoomed_in_current) * 0.5))
                 X_to_plt, Y_to_plt = np.meshgrid(x_to_plt, y_to_plt)
-                contour_to_plt = plt.contour(X_to_plt, Y_to_plt, smooth_results_to_plt, levels=[contour_level],
+                contour_to_plt = plt.contour(X_to_plt, Y_to_plt, smooth_results_to_plt, levels=[settings.CONTOUR_LEVEL],
                                              colors='r')
 
                 # remove small contours (random noisy spots) for good looking.
@@ -361,7 +443,12 @@ class DenoiseSPEImage:
                             del (level.get_paths()[i])
                 plt.show()
 
-    def get_main_beam_contour_and_force_outer_zero(self, current_frame, contour_level):
+    def get_main_beam_contour_and_force_outer_zero(self, current_frame):
+        """
+        Force all pixels to be zero but the main center contoured beam.
+        :param current_frame: original beam 2D array
+        :return:
+        """
         zoomed_in_current = current_frame[self.y_start:self.y_end, self.x_start:self.x_end]
 
         fig, ax = plt.subplots()
@@ -371,8 +458,8 @@ class DenoiseSPEImage:
         y = np.linspace(0, len(zoomed_in_current), round(len(zoomed_in_current) * 1))
         X, Y = np.meshgrid(x, y)
         contour_to_plt = ax.contour(X, Y, smooth_results_to_plt,
-                                     levels=[contour_level],
-                                     colors='r')
+                                    levels=[settings.CONTOUR_LEVEL],
+                                    colors='r')
         plt.close(fig)
 
         contour_collection = contour_to_plt.collections[0].get_paths()
@@ -397,5 +484,5 @@ class DenoiseSPEImage:
             for row_num in it.chain(range(0, min(y_cor_list)), range(max(y_cor_list), len(zoomed_in_current))):
                 zoomed_in_current[row_num][enu_x] = 0
 
-        # self.zoom_in_single_frame = zoomed_in_current
-        return zoomed_in_current
+        self.zoom_in_single_frame = zoomed_in_current
+
